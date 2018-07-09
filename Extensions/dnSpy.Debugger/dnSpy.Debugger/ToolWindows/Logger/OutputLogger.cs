@@ -224,7 +224,7 @@ namespace dnSpy.Debugger.ToolWindows.Logger {
 			return runtime.Name + ": " + appDomain.Name;
 		}
 
-		string GetExceptionName(in DbgExceptionId id) => dbgExceptionFormatterService.Value.ToString(id);
+		string GetExceptionName(DbgExceptionId id) => dbgExceptionFormatterService.Value.ToString(id);
 
 		string GetProcessName(DbgProcess process) {
 			if (process == null)
@@ -244,7 +244,7 @@ namespace dnSpy.Debugger.ToolWindows.Logger {
 			return filename;
 		}
 
-		string GetProcessNameWithPID(DbgProcess process) => $"[0x{process?.Id ?? ulong.MaxValue:X}] {GetProcessName(process)}";
+		string GetProcessNameWithPID(DbgProcess process) => $"[0x{process?.Id ?? -1:X}] {GetProcessName(process)}";
 		string GetModuleName(DbgModule module) => module?.Name ?? "???";
 
 		string FilterUserMessage(string s) {

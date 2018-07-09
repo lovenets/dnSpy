@@ -17,30 +17,22 @@
     along with dnSpy.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+using System.Diagnostics;
 using System.IO;
+using dnSpy.Contracts.Debugger.StartDebugging;
 
-namespace dnSpy.Debugger.DotNet.CorDebug.Dialogs.DebugProgram {
-	static class PortableExecutableFileHelpers {
-		public static bool IsExecutable(string file) {
-			if (!File.Exists(file))
-				return false;
-			try {
-				using (var f = File.OpenRead(file)) {
-					var r = new BinaryReader(f);
-					if (r.ReadUInt16() != 0x5A4D)
-						return false;
-					f.Position = 0x3C;
-					f.Position = r.ReadUInt32();
-					if (r.ReadUInt32() != 0x4550)
-						return false;
-					f.Position += 0x12;
-					var flags = r.ReadUInt16();
-					return (flags & 0x2000) == 0;
-				}
-			}
-			catch {
-			}
-			return false;
+namespace dnSpy.Debugger.DbgUI {
+	[ExportDbgProcessStarter(PredefinedDbgProcessStarterOrders.DefaultExe)]
+	sealed class DefaultDbgProcessStarter : DbgProcessStarter {
+		public override bool IsSupported(string filename) => PortableExecutableFileHelpers.IsExecutable(filename);
+
+		public override bool TryStart(string filename, out string error) {
+			var startInfo = new ProcessStartInfo(filename);
+			startInfo.WorkingDirectory = Path.GetDirectoryName(filename);
+			startInfo.UseShellExecute = false;
+			Process.Start(startInfo);
+			error = null;
+			return true;
 		}
 	}
 }

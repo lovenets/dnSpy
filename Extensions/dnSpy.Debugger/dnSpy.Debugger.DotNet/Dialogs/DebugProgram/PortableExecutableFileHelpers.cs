@@ -19,9 +19,9 @@
 
 using System.IO;
 
-namespace dnSpy.Debugger.DotNet.CorDebug.Impl {
+namespace dnSpy.Debugger.DotNet.Dialogs.DebugProgram {
 	static class PortableExecutableFileHelpers {
-		public static bool IsGuiApp(string file) {
+		public static bool IsExecutable(string file) {
 			if (!File.Exists(file))
 				return false;
 			try {
@@ -31,15 +31,12 @@ namespace dnSpy.Debugger.DotNet.CorDebug.Impl {
 						return false;
 					f.Position = 0x3C;
 					f.Position = r.ReadUInt32();
-					if (r.ReadUInt32() != 0x4550)
+					// Mono only checks the low 2 bytes
+					if ((ushort)r.ReadUInt32() != 0x4550)
 						return false;
-					f.Position += 0x14;
-					ushort magic = r.ReadUInt16();
-					if (magic != 0x010B && magic != 0x020B)
-						return false;
-					r.BaseStream.Position += 0x42;
-					const ushort WindowsGui = 2;
-					return r.ReadUInt16() == WindowsGui;
+					f.Position += 0x12;
+					var flags = r.ReadUInt16();
+					return (flags & 0x2000) == 0;
 				}
 			}
 			catch {
